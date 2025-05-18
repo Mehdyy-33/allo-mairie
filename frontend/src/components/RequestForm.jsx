@@ -1,47 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 export default function RequestForm() {
   const [form, setForm] = useState({
     fullName: '',
     email: '',
     category: '',
-    description: '',
-  });
+    description: ''
+  })
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+    e.preventDefault()
 
-      if (response.ok) {
-        alert('✅ Votre demande a été envoyée avec succès !');
-        setForm({ fullName: '', email: '', category: '', description: '' });
-      } else {
-        alert("❌ Une erreur est survenue lors de l'envoi de la demande.");
-        console.error("Erreur lors de l'envoi:", response);
-      }
-    } catch (error) {
-      alert('⚠️ Impossible de contacter le serveur. Veuillez réessayer plus tard.');
-      console.error('Erreur de réseau:', error);
+    const token = localStorage.getItem('token')
+
+    const response = await fetch('/api/requests', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(form)
+    })
+
+    if (response.ok) {
+      alert('✅ Votre demande a été envoyée avec succès !')
+      setForm({ fullName: '', email: '', category: '', description: '' })
+    } else {
+      alert('❌ Une erreur est survenue lors de l\'envoi de la demande.')
+      console.error('Erreur lors de l\'envoi:', response)
     }
-  };
+  }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-20 bg-gradient-to-br from-blue-100 via-white to-blue-200">
-      {/* Optionnel : motif SVG en fond décoratif */}
-      <div className="absolute inset-0 bg-[url('/pattern.svg')] bg-cover bg-no-repeat opacity-10 pointer-events-none" />
-
+    <div className="bg-gradient-to-br from-gray-100 to-blue-100 min-h-screen py-12 flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="relative z-10 bg-white shadow-2xl rounded-xl p-8 md:p-12 lg:p-16 max-w-lg w-full space-y-6 border border-gray-100 backdrop-blur-sm"
+        className="bg-white shadow-2xl rounded-xl p-8 md:p-12 lg:p-16 max-w-lg w-full space-y-6"
       >
         <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-6">
           Faites-nous part de votre requête
@@ -132,5 +130,5 @@ export default function RequestForm() {
         </div>
       </form>
     </div>
-  );
+  )
 }

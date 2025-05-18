@@ -5,71 +5,76 @@ export default function Home() {
   const images = [...Array(10)].map((_, i) => `/images/img${i + 1}.jpg`)
 
   const [introRef, introVisible] = useInView()
-  const [suiviRef, suiviVisible] = useInView()
+  const [carrouselRef, carrouselVisible] = useInView()
   const [statsRef, statsVisible] = useInView()
   const [contactRef, contactVisible] = useInView()
   const [temoignagesRef, temoignagesVisible] = useInView()
+  const [suiviRef, suiviVisible] = useInView()
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden font-sans">
-      {/* Vidéo de fond */}
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0">
-        <source src="/media/bg-video.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-black/60 z-10" />
+    <div className="relative w-full overflow-hidden font-sans bg-black">
+      {/* Vidéo de fond dans une hauteur fixe */}
+      <div className="relative w-full h-[100vh] overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="/media/bg-video.mp4" type="video/mp4" />
+        </video>
+        {/* Voile foncé par-dessus la vidéo */}
+        <div className="absolute inset-0 bg-black/60 z-10" />
+        {/* Titre flottant au-dessus */}
+        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white pt-40">
+          <div
+            id="faire-une-demande"
+            ref={introRef}
+            className={`scroll-mt-32 max-w-2xl text-center px-4 transition-all duration-700 ${
+              introVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+            }`}
+          >
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Bienvenue sur la plateforme citoyenne</h1>
+            <p className="text-lg mb-10">
+              Signalez un problème, suggérez une amélioration ou contactez votre mairie.
+            </p>
+            <Link to="/formulaire" className="inline-block bg-blue-600 text-white text-lg px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+              Soumettre une demande
+            </Link>
+          </div>
+        </div>
+      </div>
 
-      <div className="relative z-20 pt-40 flex flex-col items-center justify-start text-white">
+       {/* Contenu de la page après la vidéo */}
+      <div className="relative z-20 flex flex-col items-center justify-start text-white">
 
-        {/* Faire une demande */}
+        {/* Carrousels */}
         <div
-          id="faire-une-demande"
-          ref={introRef}
-          className={`scroll-mt-32 max-w-2xl text-center px-4 mb-20 transition-all duration-700 ${
-            introVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+          ref={carrouselRef}
+          className={`scroll-mt-32 w-full transition-opacity duration-700 ${
+            carrouselVisible ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Bienvenue sur la plateforme citoyenne</h1>
-          <p className="text-lg mb-10">
-            Signalez un problème, suggérez une amélioration ou contactez votre mairie.
-          </p>
-          <Link to="/formulaire" className="inline-block bg-blue-600 text-white text-lg px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-            Soumettre une demande
-          </Link>
-        </div>
-
-        {/* ========== SUIVI ========== */}
-        <div  className="w-full">
-          {/* Carrousel 1 */}
-          <div className="overflow-hidden mb-8 w-full opacity-0 animate-fade-in-up-late">
+          <div className="overflow-hidden mb-8 w-full">
             <div className="flex gap-4 animate-scroll-ltr w-max">
               {[...images, ...images].map((src, i) => (
-                <img
-                  key={`ltr-${i}`}
-                  src={src}
-                  alt={`carousel-1-img-${i}`}
-                  className="w-[279px] h-[196px] object-cover rounded-xl shadow"
-                />
+                <img key={`ltr-${i}`} src={src} alt={`carousel-1-img-${i}`} className="w-[279px] h-[196px] object-cover rounded-xl shadow" />
               ))}
             </div>
           </div>
 
-          {/* Carrousel 2 */}
-          <div className="overflow-hidden mb-24 w-full opacity-0 animate-fade-in-up-late">
+          <div className="overflow-hidden mb-24 w-full">
             <div className="flex gap-4 animate-scroll-rtl w-max">
               {[...images, ...images].map((src, i) => (
-                <img
-                  key={`rtl-${i}`}
-                  src={src}
-                  alt={`carousel-2-img-${i}`}
-                  className="w-[279px] h-[196px] object-cover rounded-xl shadow"
-                />
+                <img key={`rtl-${i}`} src={src} alt={`carousel-2-img-${i}`} className="w-[279px] h-[196px] object-cover rounded-xl shadow" />
               ))}
             </div>
           </div>
         </div>
 
-        {/* ========== STATS ========== */}
-         <div
+        {/* Statistiques */}
+        <div
           id="stats"
           ref={statsRef}
           className={`scroll-mt-32 relative z-20 w-full max-w-6xl px-4 mb-32 transition-all duration-700 ${
@@ -122,9 +127,8 @@ export default function Home() {
             ))}
           </div>
         </div>
-
-      {/* Section Contact / Assistance */}
-<div
+  {/* Contact */}
+        <div
           id="contact"
           ref={contactRef}
           className={`scroll-mt-32 relative z-20 w-full max-w-5xl px-4 mb-32 transition-all duration-700 ${
@@ -164,8 +168,8 @@ export default function Home() {
     </div>
   </div>
 </div>
-{/* Section Témoignages */}
- <div
+  {/* Témoignages */}
+        <div
           id="temoignages"
           ref={temoignagesRef}
           className={`scroll-mt-32 relative z-20 w-full max-w-7xl px-4 mb-32 transition-all duration-700 ${
@@ -238,8 +242,8 @@ export default function Home() {
     ))}
   </div>
 </div>
-{/* Section À venir / Version mobile */}
-<div
+{/* Suivi / Section à venir */}
+        <div
           id="suivi"
           ref={suiviRef}
           className={`scroll-mt-32 relative z-20 w-full max-w-6xl px-4 mb-32 transition-all duration-700 ${
@@ -276,11 +280,11 @@ export default function Home() {
           </div>
         </div>
 
-
       </div>
     </div>
   )
 }
+
 
 
 
