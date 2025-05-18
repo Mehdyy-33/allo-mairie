@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scrollRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-scroll-ltr {
+  animation: scrollLeft 150s linear infinite;
+}
+
+.animate-scroll-rtl {
+  animation: scrollRight 150s linear infinite;
+}
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 2s ease-out forwards;
+}
+
+.animate-fade-in-up-delayed {
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: 0.25s;
+}
+
+.animate-fade-in-up-late {
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: 0.5s;
+}

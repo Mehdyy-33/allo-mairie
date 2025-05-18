@@ -1,0 +1,42 @@
+const requestModel = require('../models/requestModel');
+
+exports.createRequest = async (req, res) => {
+  try {
+    const { fullName, email, category, description } = req.body;
+    const newRequest = await requestModel.create({ fullName, email, category, description });
+    res.status(201).json(newRequest);
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur lors de la création de la demande.' });
+  }
+};
+
+exports.getAllRequests = async (req, res) => {
+  try {
+    const requests = await requestModel.getAll();
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur lors de la récupération des demandes.' });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    const updated = await requestModel.updateStatus(id, status);
+    res.status(200).json(updated);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du statut.' });
+  }
+};
+
+exports.deleteRequest = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await requestModel.delete(id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la suppression de la demande.' });
+  }
+};
+
