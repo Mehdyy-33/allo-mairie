@@ -1,1 +1,1 @@
-frontend/public/media/bg-video.mp4
+echo "frontend/public/media/bg-video.mp4" >> .gitignore
