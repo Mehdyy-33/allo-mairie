@@ -63,16 +63,22 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 })
 
-// Google
-router.get('/google', passport.authenticate('google', { scope: ['email', 'profile'] }))
+// ✅ callback Google
+router.get('/google',
+  passport.authenticate('google', { scope: ['email', 'profile'] })
+)
 
-router.get('/google/callback', passport.authenticate('google', {
-  session: false,
-  failureRedirect: '/login',
-}), (req, res) => {
-res.redirect(`http://localhost:5173/formulaire?token=${req.user.token}`)
-})
-
+router.get('/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/login',
+    session: false,
+  }),
+  (req, res) => {
+    const token = req.user.token
+    // Redirection vers le frontend avec le token
+    res.redirect(`http://localhost:5173/formulaire?token=${token}`)
+  }
+)
 
 
 module.exports = router

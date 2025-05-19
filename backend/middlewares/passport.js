@@ -21,7 +21,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: '/api/auth/google/callback',
+callbackURL: 'http://localhost:3000/api/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       const email = profile.emails[0].value
@@ -35,7 +35,7 @@ passport.use(
 
       const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' })
       user.token = token
-      return done(null, user)
+return done(null, { ...user, token }); // ✅ on envoie le token avec l'utilisateur
     }
   )
 )
