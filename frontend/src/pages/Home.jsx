@@ -27,7 +27,7 @@ export default function Home() {
         {/* Voile foncé par-dessus la vidéo */}
         <div className="absolute inset-0 bg-black/60 z-10" />
         {/* Titre flottant au-dessus */}
-        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white pt-40">
+        <div className="relative z-20 flex flex-col items-center justify-center h-full text-white  ">
           <div
             id="faire-une-demande"
             ref={introRef}
