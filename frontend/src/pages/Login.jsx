@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -6,17 +7,20 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
-  // 🔄 Vérifie si un token est passé par Google OAuth
   useEffect(() => {
-    const url = new URL(window.location.href)
-    const token = url.searchParams.get('token')
+    const token = localStorage.getItem('token')
     if (token) {
-      localStorage.setItem('token', token)
-      navigate('/formulaire')
+      navigate('/formulaire', { replace: true })
+    }
+
+    const url = new URL(window.location.href)
+    const oauthToken = url.searchParams.get('token')
+    if (oauthToken) {
+      localStorage.setItem('token', oauthToken)
+      navigate('/formulaire', { replace: true })
     }
   }, [navigate])
 
-  // 🔐 Connexion email/mot de passe
   const handleSubmit = async (e) => {
     e.preventDefault()
     const res = await fetch('/api/auth/login', {
@@ -29,7 +33,7 @@ export default function Login() {
 
     if (res.ok) {
       localStorage.setItem('token', data.token)
-      navigate('/formulaire')
+      navigate('/formulaire', { replace: true })
     } else {
       alert(data.error || 'Erreur de connexion')
     }

@@ -1,9 +1,19 @@
-import { Link } from 'react-router-dom'
+
+import { Link, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import useInView from '../hooks/useInView'
 
 export default function Home() {
-  const images = [...Array(10)].map((_, i) => `/images/img${i + 1}.jpg`)
+  const navigate = useNavigate()
 
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      navigate('/formulaire', { replace: true })
+    }
+  }, [navigate])
+
+  const images = [...Array(10)].map((_, i) => `/images/img${i + 1}.jpg`)
   const [introRef, introVisible] = useInView()
   const [carrouselRef, carrouselVisible] = useInView()
   const [statsRef, statsVisible] = useInView()
