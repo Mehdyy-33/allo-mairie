@@ -1,29 +1,22 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom'
 
 export default function ProtectedRoute({ children }) {
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const location = useLocation();
+  const location = useLocation()
+  const urlParams = new URLSearchParams(location.search)
+  const tokenFromURL = urlParams.get('token')
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const tokenFromURL = urlParams.get('token');
+  // Si token dans l’URL (OAuth par ex.), on le stocke direct
+  if (tokenFromURL) {
+    localStorage.setItem('token', tokenFromURL)
+    return <Navigate to="/formulaire" replace />
+  }
 
-    if (tokenFromURL) {
-      localStorage.setItem('token', tokenFromURL);
-      console.log('✅ Token récupéré via URL dans ProtectedRoute');
-      setToken(tokenFromURL);
-    } else {
-      const storedToken = localStorage.getItem('token');
-      console.log('🔍 Token localStorage détecté dans ProtectedRoute :', storedToken);
-      setToken(storedToken);
-    }
+  const token = localStorage.getItem('token')
 
-    setLoading(false);
-  }, [location.search]);
+  // Vérification immédiate du token, même après un "retour"
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
 
-  if (loading) return null;
-
-  return token ? children : <Navigate to="/login" />;
+  return children
 }

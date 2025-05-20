@@ -9,18 +9,18 @@ export default function RequestForm() {
     description: '',
   });
 
-  // ✅ Redirection si non connecté
+  // ✅ Redirection sécurisée si non connecté
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      window.location.href = '/login';
+      window.location.replace('/login'); // évite les retours arrière
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
-    window.location.href = '/login';
+    window.location.replace('/login'); // empêche retour flèche navigateur
   };
 
   const handleChange = (e) => {
