@@ -1,4 +1,5 @@
-import { useState } from 'react'
+
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function Register() {
@@ -6,6 +7,13 @@ export default function Register() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      navigate('/formulaire', { replace: true })
+    }
+  }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -27,8 +35,8 @@ export default function Register() {
     const data = await res.json()
 
     if (res.ok) {
-      alert('Inscription réussie ! Vous pouvez maintenant vous connecter.')
-      navigate('/login')
+      localStorage.setItem('token', data.token)
+      navigate('/formulaire', { replace: true })
     } else {
       alert(data.error || 'Erreur lors de l’inscription')
     }
