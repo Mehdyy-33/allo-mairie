@@ -3,11 +3,22 @@ const requestModel = require('../models/requestModel');
 
 exports.createRequest = async (req, res) => {
   try {
-    const { fullName, email, category, description } = req.body;
+    const { category, description } = req.body;
     const userId = req.user.id;
-    const newRequest = await requestModel.create({ fullName, email, category, description, userId });
+    const filePath = req.file ? req.file.filename : null;
+
+    const newRequest = await requestModel.create({
+      fullName: req.user.email,
+      email: req.user.email,
+      category,
+      description,
+      userId,
+      filePath,
+    });
+
     res.status(201).json(newRequest);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Erreur lors de la création de la demande.' });
   }
 };

@@ -16,6 +16,7 @@ model Request {
   description String
   createdAt   DateTime @default(now())
   status      String   @default("Reçue")
+  filePath    String?
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
 }

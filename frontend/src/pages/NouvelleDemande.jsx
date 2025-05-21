@@ -8,25 +8,39 @@ export default function NouvelleDemande() {
     category: '',
     description: '',
   });
+  const [file, setFile] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${import.meta.env.VITE_API_URL}/requests`, form, {
+      const formData = new FormData();
+      formData.append('category', form.category);
+      formData.append('description', form.description);
+      if (file) {
+        formData.append('file', file);
+      }
+
+      await axios.post(`${import.meta.env.VITE_API_URL}/requests`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
       });
+
       navigate('/dashboard');
     } catch (err) {
       console.error('Erreur envoi demande :', err);
-      alert("Une erreur est survenue lors de l'envoi de la demande.");
+      alert("Erreur lors de l'envoi de la demande.");
     }
   };
 
@@ -35,7 +49,7 @@ export default function NouvelleDemande() {
       <CitizenHeader />
       <div className="max-w-xl mx-auto p-6">
         <h1 className="text-xl font-bold mb-4">Nouvelle demande</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
           <div>
             <label className="block text-sm font-medium text-gray-700">Catégorie</label>
             <input
@@ -56,6 +70,15 @@ export default function NouvelleDemande() {
               className="w-full mt-1 border p-2 rounded"
               rows={4}
               required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Pièce jointe</label>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="w-full mt-1"
+              accept=".pdf,.jpg,.png,.doc,.docx"
             />
           </div>
           <button
