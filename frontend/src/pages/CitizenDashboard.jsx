@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import CitizenHeader from '../components/CitizenHeader';
 
 const CitizenDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -38,7 +39,10 @@ const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/reques
   };
 
   return (
+    
     <div className="p-6">
+            <CitizenHeader />
+
       <h1 className="text-2xl font-bold mb-4">
         Bonjour {user.firstName}, vous avez {getInProgressCount()} demande(s) en cours.
       </h1>
