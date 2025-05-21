@@ -1,31 +1,25 @@
-import { useNavigate } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 
 export default function HeaderAuth() {
-  const navigate = useNavigate()
+  const location = useLocation()
+  const isLoginOrRegister = location.pathname === '/login' || location.pathname === '/register'
 
   return (
-    <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[92%] max-w-6xl bg-white/90 backdrop-blur-lg rounded-full shadow-md px-6 py-3 flex items-center justify-between">
-      
-      {/* Logo */}
-      <div
-        onClick={() => navigate('/')}
-        className="text-xl font-bold text-blue-700 cursor-pointer"
-      >
-        Citoyen+
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      {/* Colonne gauche : branding */}
+      <div className="bg-blue-100 flex items-center justify-center">
+        <div className="max-w-md text-left px-8">
+          <h1 className="text-4xl font-extrabold text-blue-700 mb-2">Allo Maire</h1>
+          <p className="text-base text-blue-600">Votre mairie à portée de clic</p>
+        </div>
       </div>
 
-      {/* Liens à droite */}
-      <nav className="flex gap-4 text-sm font-medium text-gray-700">
-        <button onClick={() => navigate('/')} className="hover:text-blue-600 transition">
-          Accueil
-        </button>
-        <button onClick={() => navigate('/#contact')} className="hover:text-blue-600 transition">
-          Contact
-        </button>
-        <button onClick={() => navigate('/faq')} className="hover:text-blue-600 transition">
-          FAQ
-        </button>
-      </nav>
-    </header>
+      {/* Colonne droite : rendu du formulaire */}
+      <div className="flex items-center justify-center px-8">
+        <div className="w-full max-w-md">
+          <Outlet /> {/* C’est ici que <Login /> ou <Register /> sera rendu */}
+        </div>
+      </div>
+    </div>
   )
 }

@@ -13,13 +13,13 @@ model Request {
   email       String
   category    String
   description String
-  status      String   @default("Reçue")  // ✅ Nouveau champ
   createdAt   DateTime @default(now())
+  status      String   @default("Reçue")
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
   createdAt DateTime @default(now())
 }

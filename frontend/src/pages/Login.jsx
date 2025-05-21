@@ -30,7 +30,6 @@ export default function Login() {
     })
 
     const data = await res.json()
-
     if (res.ok) {
       localStorage.setItem('token', data.token)
       navigate('/formulaire', { replace: true })
@@ -39,16 +38,14 @@ export default function Login() {
     }
   }
 
-  // 🔁 Redirige vers Google OAuth
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:3000/api/auth/google'
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-10 space-y-6">
+    <div className="w-full max-w-sm px-4 space-y-6">
       <h2 className="text-2xl font-bold text-center">Connexion</h2>
 
-      {/* 🔘 Bouton Google */}
       <button
         onClick={handleGoogleLogin}
         className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded"
@@ -58,7 +55,6 @@ export default function Login() {
 
       <div className="text-gray-400 text-center text-sm">ou</div>
 
-      {/* 🔐 Formulaire classique */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
@@ -76,12 +72,15 @@ export default function Login() {
           className="w-full border px-4 py-2 rounded"
           required
         />
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">
+        <button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+        >
           Se connecter
         </button>
       </form>
 
-      <p className="text-sm text-center">
+      <p className="text-center text-sm">
         Pas encore de compte ?{' '}
         <a href="/register" className="text-blue-600 hover:underline">
           Inscrivez-vous
