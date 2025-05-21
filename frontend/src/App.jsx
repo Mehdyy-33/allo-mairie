@@ -9,13 +9,17 @@ import Stats from './pages/Stats'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import CitizenDashboard from './pages/CitizenDashboard'
+import NouvelleDemande from './pages/NouvelleDemande';
+import MesDemandes from './pages/MesDemandes';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/dashboard" element={<ProtectedRoute><CitizenDashboard /></ProtectedRoute>} />
-        {/* Page d’accueil avec Header + Footer */}
+<Route path="/nouvelle-demande" element={<ProtectedRoute><NouvelleDemande /></ProtectedRoute>} />
+<Route path="/demandes" element={<ProtectedRoute><MesDemandes /></ProtectedRoute>} />
+
         <Route
           path="/"
           element={
