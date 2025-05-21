@@ -10,14 +10,14 @@ export default function Login() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      navigate('/formulaire', { replace: true })
+      navigate('/dashboard', { replace: true })
     }
 
     const url = new URL(window.location.href)
     const oauthToken = url.searchParams.get('token')
     if (oauthToken) {
       localStorage.setItem('token', oauthToken)
-      navigate('/formulaire', { replace: true })
+      navigate('/dashboard', { replace: true })
     }
   }, [navigate])
 
@@ -32,7 +32,7 @@ export default function Login() {
     const data = await res.json()
     if (res.ok) {
       localStorage.setItem('token', data.token)
-      navigate('/formulaire', { replace: true })
+      navigate('/dashboard', { replace: true })
     } else {
       alert(data.error || 'Erreur de connexion')
     }

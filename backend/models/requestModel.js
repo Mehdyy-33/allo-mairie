@@ -1,3 +1,4 @@
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -19,5 +20,12 @@ exports.updateStatus = async (id, status) => {
 exports.delete = async (id) => {
   return await prisma.request.delete({
     where: { id: parseInt(id) }
+  });
+};
+
+exports.getByUserId = async (userId) => {
+  return await prisma.request.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' }
   });
 };

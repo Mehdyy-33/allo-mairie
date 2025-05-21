@@ -96,10 +96,10 @@ router.get('/google/callback',
   }),
   (req, res) => {
     const token = req.user.token;
-    res.redirect(`http://localhost:5173/formulaire?token=${token}`);
+    console.log('redirecting to dashboard')
+res.redirect(`http://localhost:5173/dashboard?token=${token}`);
   }
 );
 
 module.exports = router;
 
-module.exports = router;

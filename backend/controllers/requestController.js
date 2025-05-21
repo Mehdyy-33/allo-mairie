@@ -1,9 +1,11 @@
+
 const requestModel = require('../models/requestModel');
 
 exports.createRequest = async (req, res) => {
   try {
     const { fullName, email, category, description } = req.body;
-    const newRequest = await requestModel.create({ fullName, email, category, description });
+    const userId = req.user.id;
+    const newRequest = await requestModel.create({ fullName, email, category, description, userId });
     res.status(201).json(newRequest);
   } catch (error) {
     res.status(500).json({ error: 'Erreur lors de la création de la demande.' });
@@ -40,3 +42,12 @@ exports.deleteRequest = async (req, res) => {
   }
 };
 
+exports.getRequestsByUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userRequests = await requestModel.getByUserId(userId);
+    res.status(200).json(userRequests);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de la récupération des demandes de l'utilisateur." });
+  }
+};

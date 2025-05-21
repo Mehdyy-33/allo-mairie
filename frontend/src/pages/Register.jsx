@@ -11,7 +11,7 @@ export default function Register() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      navigate('/formulaire', { replace: true })
+      navigate('/dashboard', { replace: true })
     }
   }, [navigate])
 
@@ -36,7 +36,7 @@ export default function Register() {
 
     if (res.ok) {
       localStorage.setItem('token', data.token)
-      navigate('/formulaire', { replace: true })
+      navigate('/dashboard', { replace: true })
     } else {
       alert(data.error || 'Erreur lors de l’inscription')
     }

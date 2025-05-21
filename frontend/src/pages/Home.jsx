@@ -9,7 +9,7 @@ export default function Home() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      navigate('/formulaire', { replace: true })
+      navigate('/dashboard', { replace: true })
     }
   }, [navigate])
 
@@ -49,7 +49,7 @@ export default function Home() {
             <p className="text-lg mb-10">
               Signalez un problème, suggérez une amélioration ou contactez votre mairie.
             </p>
-            <Link to="/formulaire" className="inline-block bg-blue-600 text-white text-lg px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+            <Link to="/dashboard" className="inline-block bg-blue-600 text-white text-lg px-6 py-3 rounded-lg hover:bg-blue-700 transition">
               Soumettre une demande
             </Link>
           </div>

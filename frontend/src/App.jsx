@@ -4,16 +4,17 @@ import HeaderAuth from './pages/HeaderAuth'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import RequestForm from './pages/RequestForm'
 import TrackRequest from './pages/TrackRequest'
 import Stats from './pages/Stats'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import CitizenDashboard from './pages/CitizenDashboard'
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/dashboard" element={<ProtectedRoute><CitizenDashboard /></ProtectedRoute>} />
         {/* Page d’accueil avec Header + Footer */}
         <Route
           path="/"
@@ -64,14 +65,7 @@ function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="/suivi" element={<TrackRequest />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route
-          path="/formulaire"
-          element={
-            <ProtectedRoute>
-              <RequestForm />
-            </ProtectedRoute>
-          }
-        />
+       
       </Routes>
     </Router>
   )

@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children }) {
   // Si token dans l’URL (OAuth par ex.), on le stocke direct
   if (tokenFromURL) {
     localStorage.setItem('token', tokenFromURL)
-    return <Navigate to="/formulaire" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   const token = localStorage.getItem('token')

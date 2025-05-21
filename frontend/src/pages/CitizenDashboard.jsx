@@ -11,10 +11,16 @@ const CitizenDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userResponse = await axios.get('/api/auth/me');
+const token = localStorage.getItem('token');
+const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
         setUser(userResponse.data);
 
-        const requestsResponse = await axios.get('/api/requests/user');
+const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/requests/user`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
         setRequests(requestsResponse.data);
       } catch (error) {
         console.error(error);
