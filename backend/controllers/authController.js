@@ -36,14 +36,16 @@ const register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashed,
-        nom,
-        prenom,
-        communeId
-      }
-    });
+  data: {
+    email,
+    password: hashed,
+    nom,
+    prenom,
+    communeId: Number(communeId),
+    isComplete: true, // ✅ important
+  },
+});
+
 
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
     res.status(201).json({ token });

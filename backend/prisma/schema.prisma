@@ -21,15 +21,16 @@ model Request {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
   password   String
-  nom        String
-  prenom     String
-  createdAt  DateTime @default(now())
+  nom        String?   // 👈 devenu optionnel
+  prenom     String?   // 👈 devenu optionnel
+  createdAt  DateTime  @default(now())
+  isComplete Boolean   @default(false) // 👈 ajouté
 
-  communeId  Int
-  commune    Commune  @relation(fields: [communeId], references: [id])
+  communeId  Int?      // 👈 devenu optionnel
+  commune    Commune?  @relation(fields: [communeId], references: [id])
 
   requests   Request[]
 }

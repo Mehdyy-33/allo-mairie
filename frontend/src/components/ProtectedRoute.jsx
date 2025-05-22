@@ -1,22 +1,54 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function ProtectedRoute({ children }) {
-  const location = useLocation()
-  const urlParams = new URLSearchParams(location.search)
-  const tokenFromURL = urlParams.get('token')
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
-  // Si token dans l’URL (OAuth par ex.), on le stocke direct
-  if (tokenFromURL) {
-    localStorage.setItem('token', tokenFromURL)
-    return <Navigate to="/dashboard" replace />
-  }
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const tokenFromURL = urlParams.get('token');
 
-  const token = localStorage.getItem('token')
+    if (tokenFromURL) {
+      localStorage.setItem('token', tokenFromURL);
+      navigate('/dashboard', { replace: true });
+      return;
+    }
 
-  // Vérification immédiate du token, même après un "retour"
-  if (!token) {
-    return <Navigate to="/login" replace />
-  }
+    const token = localStorage.getItem('token');
+    if (!token && !tokenFromURL) {
+  navigate('/login', { replace: true });
+  return;
+}
 
-  return children
+
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.data.isComplete) {
+          navigate('/completer-profil', { replace: true });
+        } else {
+          setAuthorized(true);
+        }
+      } catch (err) {
+        console.error('❌ Auth error:', err);
+        localStorage.removeItem('token');
+        navigate('/login', { replace: true });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [location, navigate]);
+
+  if (loading) return <div className="p-4 text-center">Chargement...</div>;
+
+  return authorized ? children : null;
 }

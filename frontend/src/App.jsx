@@ -1,24 +1,28 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Header from './pages/Header'
-import HeaderAuth from './pages/HeaderAuth'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import TrackRequest from './pages/TrackRequest'
-import Stats from './pages/Stats'
-import AdminDashboard from './pages/AdminDashboard'
-import ProtectedRoute from './components/ProtectedRoute'
-import CitizenDashboard from './pages/CitizenDashboard'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './pages/Header';
+import HeaderAuth from './pages/HeaderAuth';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import TrackRequest from './pages/TrackRequest';
+import Stats from './pages/Stats';
+import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import CitizenDashboard from './pages/CitizenDashboard';
 import NouvelleDemande from './pages/NouvelleDemande';
 import MesDemandes from './pages/MesDemandes';
+import CompleterProfil from './pages/CompleterProfil'; // ✅ ajouté ici
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/dashboard" element={<ProtectedRoute><CitizenDashboard /></ProtectedRoute>} />
-<Route path="/nouvelle-demande" element={<ProtectedRoute><NouvelleDemande /></ProtectedRoute>} />
-<Route path="/demandes" element={<ProtectedRoute><MesDemandes /></ProtectedRoute>} />
+        <Route path="/nouvelle-demande" element={<ProtectedRoute><NouvelleDemande /></ProtectedRoute>} />
+        <Route path="/demandes" element={<ProtectedRoute><MesDemandes /></ProtectedRoute>} />
+
+        {/* ✅ Route publique pour compléter le profil Google */}
+        <Route path="/completer-profil" element={<CompleterProfil />} />
 
         <Route
           path="/"
@@ -69,11 +73,9 @@ function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="/suivi" element={<TrackRequest />} />
         <Route path="/admin" element={<AdminDashboard />} />
-       
       </Routes>
     </Router>
-  )
+  );
 }
 
-
-export default App
+export default App;
