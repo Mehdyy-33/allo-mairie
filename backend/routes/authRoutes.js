@@ -23,7 +23,6 @@ router.post('/login', loginLimiter, login);
 // ✅ Route protégée pour récupérer l'utilisateur connecté
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    console.log('🔍 ID utilisateur:', req.user.id);
 
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
@@ -50,7 +49,6 @@ router.get('/google/callback',
   }),
   (req, res) => {
     const token = req.user.token;
-    console.log('redirecting to dashboard')
     res.redirect(`http://localhost:5173/dashboard?token=${token}`);
   }
 );

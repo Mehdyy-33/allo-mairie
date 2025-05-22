@@ -13,7 +13,6 @@ const CitizenDashboard = () => {
     const fetchData = async () => {
       try {
 const token = localStorage.getItem('token');
-console.log('TOKEN:', token); // 👈 Ajoute ici
 
 const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
   headers: { Authorization: `Bearer ${token}` },

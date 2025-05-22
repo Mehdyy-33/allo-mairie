@@ -6,13 +6,13 @@ const { z } = require('zod');
 const prisma = new PrismaClient();
 const SECRET = process.env.JWT_SECRET || 'citoyen-secret';
 
-// ✅ Schéma d'inscription avec tous les champs
+// Schéma d'inscription
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Mot de passe trop court"),
   nom: z.string().min(1, "Nom requis"),
   prenom: z.string().min(1, "Prénom requis"),
-  commune: z.string().min(1, "Commune requise")
+  communeId: z.number().int().positive("Commune invalide")
 });
 
 const register = async (req, res) => {
@@ -21,7 +21,7 @@ const register = async (req, res) => {
     return res.status(400).json({ error: 'Champs invalides.', details: parsed.error.errors });
   }
 
-  const { email, password, nom, prenom, commune } = parsed.data;
+  const { email, password, nom, prenom, communeId } = parsed.data;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -29,9 +29,20 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'Email déjà utilisé.' });
     }
 
+    const commune = await prisma.commune.findUnique({ where: { id: communeId } });
+    if (!commune || !commune.active) {
+      return res.status(400).json({ error: 'Commune non valide ou inactive.' });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, password: hashed, nom, prenom, commune },
+      data: {
+        email,
+        password: hashed,
+        nom,
+        prenom,
+        communeId
+      }
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
@@ -42,7 +53,7 @@ const register = async (req, res) => {
   }
 };
 
-// ✅ Schéma de login simple
+// Schéma de login
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8)

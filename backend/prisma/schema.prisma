@@ -15,20 +15,29 @@ model Request {
   description String
   createdAt   DateTime @default(now())
   status      String   @default("Reçue")
-  filePath    String?  // ✅ doit exister
-  userId      Int      // ✅ doit exister
+  filePath    String?
+  userId      Int
   user        User     @relation(fields: [userId], references: [id])
 }
 
-
 model User {
- id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  nom      String
-  prenom   String
-  commune  String
-  createdAt DateTime  @default(now())
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  nom        String
+  prenom     String
+  createdAt  DateTime @default(now())
 
-  requests  Request[]  // 👈 ça c’est la clé manquante !
+  communeId  Int
+  commune    Commune  @relation(fields: [communeId], references: [id])
+
+  requests   Request[]
+}
+
+model Commune {
+  id      Int     @id @default(autoincrement())
+  nom     String  @unique
+  active  Boolean @default(true)
+
+  users   User[]
 }

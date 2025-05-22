@@ -10,7 +10,6 @@ function authenticateToken(req, res, next) {
 
 jwt.verify(token, SECRET, (err, user) => {
   if (err) return res.status(403).json({ error: 'Token invalide' });
-  console.log('✅ Utilisateur décodé depuis le token :', user);
   req.user = user;
   next();
 });
