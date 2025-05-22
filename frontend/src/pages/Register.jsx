@@ -157,6 +157,12 @@ export default function Register() {
           Connectez-vous
         </a>
       </p>
+      <button
+        onClick={() => window.location.href = '/'}
+        className="w-full border border-gray-300 hover:border-gray-500 text-gray-700 py-2 rounded mt-4"
+      >
+        ⬅ Revenir à l’accueil
+      </button>
     </div>
   );
 }

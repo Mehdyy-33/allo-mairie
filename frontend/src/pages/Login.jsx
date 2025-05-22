@@ -1,46 +1,45 @@
-
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     if (token) {
-      navigate('/dashboard', { replace: true })
+      navigate('/dashboard', { replace: true });
     }
 
-    const url = new URL(window.location.href)
-    const oauthToken = url.searchParams.get('token')
+    const url = new URL(window.location.href);
+    const oauthToken = url.searchParams.get('token');
     if (oauthToken) {
-      localStorage.setItem('token', oauthToken)
-      navigate('/dashboard', { replace: true })
+      localStorage.setItem('token', oauthToken);
+      navigate('/dashboard', { replace: true });
     }
-  }, [navigate])
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
+      body: JSON.stringify({ email, password }),
+    });
 
-    const data = await res.json()
+    const data = await res.json();
     if (res.ok) {
-      localStorage.setItem('token', data.token)
-      navigate('/dashboard', { replace: true })
+      localStorage.setItem('token', data.token);
+      navigate('/dashboard', { replace: true });
     } else {
-      alert(data.error || 'Erreur de connexion')
+      alert(data.error || 'Erreur de connexion');
     }
-  }
+  };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google'
-  }
+    window.location.href = 'http://localhost:3000/api/auth/google';
+  };
 
   return (
     <div className="w-full max-w-sm px-4 space-y-6">
@@ -86,6 +85,13 @@ export default function Login() {
           Inscrivez-vous
         </a>
       </p>
+
+      <button
+        onClick={() => window.location.href = '/'}
+        className="w-full border border-gray-300 hover:border-gray-500 text-gray-700 py-2 rounded mt-4"
+      >
+        ⬅ Revenir à l’accueil
+      </button>
     </div>
-  )
+  );
 }
