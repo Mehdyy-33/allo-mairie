@@ -11,19 +11,30 @@ import ProtectedRoute from './components/ProtectedRoute';
 import CitizenDashboard from './pages/CitizenDashboard';
 import NouvelleDemande from './pages/NouvelleDemande';
 import MesDemandes from './pages/MesDemandes';
-import CompleterProfil from './pages/CompleterProfil'; // ✅ ajouté ici
+import CompleterProfil from './pages/CompleterProfil';
+
+// 🆕 Pages ajoutées
+import Profil from './pages/Profil';
+import FAQ from './pages/FAQ';
+import MesDocuments from './pages/MesDocuents';
+import Notifications from './pages/Notification';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Routes citoyennes protégées */}
         <Route path="/dashboard" element={<ProtectedRoute><CitizenDashboard /></ProtectedRoute>} />
         <Route path="/nouvelle-demande" element={<ProtectedRoute><NouvelleDemande /></ProtectedRoute>} />
         <Route path="/demandes" element={<ProtectedRoute><MesDemandes /></ProtectedRoute>} />
+        <Route path="/documents" element={<ProtectedRoute><MesDocuments /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
+        <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
 
-        {/* ✅ Route publique pour compléter le profil Google */}
         <Route path="/completer-profil" element={<CompleterProfil />} />
 
+        {/* Accueil public avec Header */}
         <Route
           path="/"
           element={
@@ -63,13 +74,13 @@ function App() {
           }
         />
 
-        {/* Routes /login et /register avec layout HeaderAuth */}
+        {/* Auth routes avec HeaderAuth */}
         <Route element={<HeaderAuth />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Route>
 
-        {/* Les autres pages normales */}
+        {/* Autres pages accessibles */}
         <Route path="/stats" element={<Stats />} />
         <Route path="/suivi" element={<TrackRequest />} />
         <Route path="/admin" element={<AdminDashboard />} />

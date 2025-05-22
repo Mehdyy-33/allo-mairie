@@ -1,4 +1,4 @@
-
+// ✅ CitizenDashboard.jsx amélioré
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -6,23 +6,24 @@ import CitizenHeader from '../components/CitizenHeader';
 
 const CitizenDashboard = () => {
   const [requests, setRequests] = useState([]);
-  const [user, setUser] = useState({ firstName: '' });
+  const [user, setUser] = useState({ prenom: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
 
-const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
+        const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setUser(userResponse.data);
+        console.log("Utilisateur connecté :", userResponse.data);
 
-const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/requests/user`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
 
+        const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/requests/user`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setRequests(requestsResponse.data);
       } catch (error) {
         console.error(error);
@@ -35,34 +36,57 @@ const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/reques
     navigate('/nouvelle-demande');
   };
 
-  const getInProgressCount = () => {
-    return requests.filter(r => r.status === 'En cours').length;
+  const countByStatus = (status) => {
+    return requests.filter(r => r.status === status).length;
   };
 
   return (
-    
-    <div className="p-6">
-            <CitizenHeader />
+    <>
+      <CitizenHeader />
+      <div className="max-w-4xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-2">Bonjour, {user.prenom} 👋</h1>
+        <p className="text-gray-600 mb-6">Bienvenue sur votre tableau de bord citoyen.</p>
 
-      <h1 className="text-2xl font-bold mb-4">
-        Bonjour {user.prenom}, vous avez {getInProgressCount()} demande(s) en cours.
-      </h1>
-      <button
-        onClick={handleNewRequest}
-        className="bg-blue-600 text-white px-4 py-2 rounded mb-6"
-      >
-        Nouvelle demande
-      </button>
-      <div className="space-y-4">
-        {requests.slice(0, 5).map((req) => (
-          <div key={req.id} className="border p-4 rounded shadow">
-            <h2 className="font-semibold">{req.title}</h2>
-            <p className="text-sm text-gray-600">Statut : {req.status}</p>
-            <p className="text-sm text-gray-500">Créée le : {new Date(req.createdAt).toLocaleDateString()}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+            <h2 className="font-semibold">📬 Total des demandes</h2>
+            <p className="text-2xl">{requests.length}</p>
           </div>
-        ))}
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <h2 className="font-semibold">🕓 En cours</h2>
+            <p className="text-2xl">{countByStatus('en_cours')}</p>
+          </div>
+          <div className="bg-green-50 border-l-4 border-green-400 p-4">
+            <h2 className="font-semibold">✅ Résolues</h2>
+            <p className="text-2xl">{countByStatus('resolue')}</p>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <button
+            onClick={handleNewRequest}
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          >
+            ➕ Faire une nouvelle demande
+          </button>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-bold mb-2">🕒 Dernières demandes</h2>
+          <ul className="space-y-2">
+            {requests.slice(0, 5).map((req) => (
+              <li key={req.id} className="p-3 bg-gray-100 rounded">
+                <div className="flex justify-between">
+                  <span className="font-medium">{req.type}</span>
+                  <span className="text-sm text-gray-600">{new Date(req.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="text-sm text-gray-700">Statut : <strong>{req.status}</strong></div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

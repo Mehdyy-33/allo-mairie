@@ -24,7 +24,7 @@ export default function NouvelleDemande() {
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      formData.append('category', form.category);
+      formData.append('category', form.category); // ✅ nom du champ structuré
       formData.append('description', form.description);
       if (file) {
         formData.append('file', file);
@@ -51,16 +51,27 @@ export default function NouvelleDemande() {
         <h1 className="text-xl font-bold mb-4">Nouvelle demande</h1>
         <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-            <input
-              type="text"
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Catégorie de la demande
+            </label>
+            <select
               name="category"
               value={form.category}
               onChange={handleChange}
-              className="w-full mt-1 border p-2 rounded"
               required
-            />
+              className="border p-2 w-full mb-4"
+            >
+              <option value="">Sélectionner une catégorie</option>
+              <option value="voirie">Voirie</option>
+              <option value="éclairage">Éclairage public</option>
+              <option value="déchets">Déchets</option>
+              <option value="nuisances">Nuisances</option>
+              <option value="sécurité">Sécurité</option>
+              <option value="urbanisme">Urbanisme</option>
+              <option value="autre">Autre</option>
+            </select>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
@@ -72,6 +83,7 @@ export default function NouvelleDemande() {
               required
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Pièce jointe</label>
             <input
@@ -81,6 +93,7 @@ export default function NouvelleDemande() {
               accept=".pdf,.jpg,.png,.doc,.docx"
             />
           </div>
+
           <button
             type="submit"
             className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
