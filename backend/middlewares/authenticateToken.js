@@ -8,11 +8,12 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Token manquant' })
   }
 
-  jwt.verify(token, SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Token invalide' })
-    req.user = user
-    next()
-  })
+jwt.verify(token, SECRET, (err, user) => {
+  if (err) return res.status(403).json({ error: 'Token invalide' });
+  console.log('✅ Utilisateur décodé depuis le token :', user);
+  req.user = user;
+  next();
+});
 }
 
 module.exports = authenticateToken

@@ -13,6 +13,8 @@ const CitizenDashboard = () => {
     const fetchData = async () => {
       try {
 const token = localStorage.getItem('token');
+console.log('TOKEN:', token); // 👈 Ajoute ici
+
 const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
   headers: { Authorization: `Bearer ${token}` },
 });
@@ -44,7 +46,7 @@ const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/reques
             <CitizenHeader />
 
       <h1 className="text-2xl font-bold mb-4">
-        Bonjour {user.firstName}, vous avez {getInProgressCount()} demande(s) en cours.
+        Bonjour {user.prenom}, vous avez {getInProgressCount()} demande(s) en cours.
       </h1>
       <button
         onClick={handleNewRequest}

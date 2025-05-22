@@ -22,9 +22,12 @@ model Request {
 
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
+ id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  nom      String
+  prenom   String
+  commune  String
   createdAt DateTime  @default(now())
 
   requests  Request[]  // 👈 ça c’est la clé manquante !
