@@ -16,7 +16,15 @@ export default function NouvelleDemande() {
   };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+
+    if (selectedFile) {
+      console.log('📎 Fichier sélectionné :');
+      console.log('Nom      :', selectedFile.name);
+      console.log('Taille   :', selectedFile.size, 'octets');
+      console.log('Type MIME:', selectedFile.type);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -24,10 +32,16 @@ export default function NouvelleDemande() {
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      formData.append('category', form.category); // ✅ nom du champ structuré
+      formData.append('category', form.category);
       formData.append('description', form.description);
+
       if (file) {
         formData.append('file', file);
+      }
+
+      console.log('📤 Données envoyées :');
+      for (let pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
       }
 
       await axios.post(`${import.meta.env.VITE_API_URL}/requests`, formData, {
@@ -39,7 +53,7 @@ export default function NouvelleDemande() {
 
       navigate('/dashboard');
     } catch (err) {
-      console.error('Erreur envoi demande :', err);
+      console.error('❌ Erreur envoi demande :', err);
       alert("Erreur lors de l'envoi de la demande.");
     }
   };
@@ -90,7 +104,7 @@ export default function NouvelleDemande() {
               type="file"
               onChange={handleFileChange}
               className="w-full mt-1"
-              accept=".pdf,.jpg,.png,.doc,.docx"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
             />
           </div>
 

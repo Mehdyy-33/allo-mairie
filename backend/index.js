@@ -26,6 +26,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const path = require('path'); // ⚠️ Important si pas déjà importé
+
+// 👉 Cette ligne sert le dossier "uploads" à l'URL "/api/uploads"
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // ✅ Redirection vers HTTPS en production
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
