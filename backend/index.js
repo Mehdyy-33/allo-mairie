@@ -71,5 +71,9 @@ app.use('/api', communeRoutes); // ✅ Ajout de la route des communes
 // 🚀 Lancement serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Serveur backend lancé sur http://localhost:${PORT}`);
+    console.log(`✅ Serveur backend lancé sur http://localhost:${PORT}`);
+
 });
+
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/user', userRoutes);

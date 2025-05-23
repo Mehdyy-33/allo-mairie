@@ -18,7 +18,6 @@ const CitizenDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(userResponse.data);
-        console.log("Utilisateur connecté :", userResponse.data);
 
 
         const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/requests/user`, {

@@ -39,7 +39,6 @@ export default function NouvelleDemande() {
         formData.append('file', file);
       }
 
-      console.log('📤 Données envoyées :');
       for (let pair of formData.entries()) {
         console.log(`${pair[0]}:`, pair[1]);
       }

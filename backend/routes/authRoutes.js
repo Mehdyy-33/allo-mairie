@@ -12,7 +12,7 @@ const router = express.Router();
 
 // ✅ Limiteur anti-brute-force pour le login
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 5,
   message: 'Trop de tentatives. Réessayez dans quelques minutes.'
 });
@@ -21,16 +21,26 @@ const loginLimiter = rateLimit({
 router.post('/register', register);
 router.post('/login', loginLimiter, login);
 
-// ✅ Route protégée pour récupérer l'utilisateur connecté
+// ✅ Récupérer l'utilisateur connecté avec authProvider
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-select: { id: true, email: true, prenom: true, isComplete: true }
+      select: {
+        id: true,
+        email: true,
+        prenom: true,
+        isComplete: true,
+        googleId: true // pour savoir si OAuth
+      }
     });
 
     if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
-    res.json(user);
+
+    res.json({
+      ...user,
+      authProvider: user.googleId ? 'google' : 'local'
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -83,7 +93,6 @@ router.get('/google/callback',
   (req, res) => {
     const token = req.user.token;
 
-    // ✅ Vérifie si profil est complet
     if (!req.user.isComplete) {
       return res.redirect(`http://localhost:5173/completer-profil?token=${token}`);
     }
@@ -91,6 +100,5 @@ router.get('/google/callback',
     return res.redirect(`http://localhost:5173/dashboard?token=${token}`);
   }
 );
-
 
 module.exports = router;

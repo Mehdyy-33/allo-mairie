@@ -23,27 +23,35 @@ passport.use(
       callbackURL: 'http://localhost:3000/api/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
-      const email = profile.emails[0].value;
+  const email = profile.emails[0].value;
 
-      let user = await prisma.user.findUnique({ where: { email } });
+  let user = await prisma.user.findUnique({ where: { email } });
 
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            email,
-            password: 'google-oauth',
-            isComplete: false, // 👈 utilisateur incomplet
-          },
-        });
-      }
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        password: 'google-oauth',
+        googleId: profile.id,         // ✅ stocke le Google ID
+        isComplete: false
+      },
+    });
+  } else if (!user.googleId) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { googleId: profile.id } // ✅ mise à jour si manquant
+    });
+    user.googleId = profile.id;
+  }
 
-      const token = jwt.sign({ id: user.id, email: user.email }, SECRET, {
-        expiresIn: '1h',
-      });
+  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, {
+    expiresIn: '1h',
+  });
 
-      // 👇 Fournit le token et le flag isComplete pour décider dans la route de redirection
-      return done(null, { ...user, token });
-    }
+  return done(null, { ...user, token });
+}
+
+    
   )
 );
 
