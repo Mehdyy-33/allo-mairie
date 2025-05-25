@@ -23,35 +23,43 @@ passport.use(
       callbackURL: 'http://localhost:3000/api/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
-  const email = profile.emails[0].value;
+      const email = profile.emails[0].value;
 
-  let user = await prisma.user.findUnique({ where: { email } });
+      let user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email,
-        password: 'google-oauth',
-        googleId: profile.id,         // ✅ stocke le Google ID
-        isComplete: false
-      },
-    });
-  } else if (!user.googleId) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { googleId: profile.id } // ✅ mise à jour si manquant
-    });
-    user.googleId = profile.id;
-  }
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email,
+            password: 'google-oauth',
+            googleId: profile.id,
+            nom: profile.displayName,
+            isComplete: false,
+          },
+        });
+      } else {
+        const updates = {};
 
-  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, {
-    expiresIn: '1h',
-  });
+        if (!user.googleId) updates.googleId = profile.id;
+        if (!user.nom) updates.nom = profile.displayName;
+        if (!user.isComplete) updates.isComplete = true;
 
-  return done(null, { ...user, token });
-}
+        if (Object.keys(updates).length > 0) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: updates,
+          });
 
-    
+          user = { ...user, ...updates };
+        }
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, SECRET, {
+        expiresIn: '1h',
+      });
+
+      return done(null, { ...user, token });
+    }
   )
 );
 

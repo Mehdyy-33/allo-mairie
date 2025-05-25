@@ -30,6 +30,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         id: true,
         email: true,
         prenom: true,
+          nom: true,
         isComplete: true,
         googleId: true // pour savoir si OAuth
       }

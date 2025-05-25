@@ -1,0 +1,40 @@
+.nav {
+  background: #333;
+  padding: 1rem;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.nav.active {
+  background: #222;
+}
+
+.nav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav ul {
+  display: flex;
+  list-style: none;
+  gap: 1rem;
+}
+
+.nav ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+.toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.line {
+  width: 25px;
+  height: 3px;
+  background: white;
+  margin: 4px 0;
+}

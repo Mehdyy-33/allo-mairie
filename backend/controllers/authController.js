@@ -6,7 +6,7 @@ const { z } = require('zod');
 const prisma = new PrismaClient();
 const SECRET = process.env.JWT_SECRET || 'citoyen-secret';
 
-// Schéma d'inscription
+// ✅ Schéma d'inscription avec validation stricte
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Mot de passe trop court"),
@@ -35,17 +35,17 @@ const register = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-  data: {
-    email,
-    password: hashed,
-    nom,
-    prenom,
-    communeId: Number(communeId),
-    isComplete: true, // ✅ important
-  },
-});
 
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashed,
+        nom,
+        prenom,
+        communeId: Number(communeId),
+        isComplete: true,
+      },
+    });
 
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
     res.status(201).json({ token });
@@ -55,7 +55,7 @@ const register = async (req, res) => {
   }
 };
 
-// Schéma de login
+// ✅ Schéma de login avec zod
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8)
@@ -68,14 +68,20 @@ const login = async (req, res) => {
   }
 
   const { email, password } = parsed.data;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return res.status(401).json({ error: 'Utilisateur non trouvé' });
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ error: 'Mot de passe invalide' });
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(401).json({ error: 'Utilisateur non trouvé' });
 
-  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
-  res.json({ token });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: 'Mot de passe invalide' });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur.' });
+  }
 };
 
 module.exports = { register, login };
