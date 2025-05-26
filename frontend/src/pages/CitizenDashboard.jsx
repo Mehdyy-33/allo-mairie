@@ -1,12 +1,14 @@
-// ✅ CitizenDashboard.jsx amélioré
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CitizenHeader from '../components/CitizenHeader';
+import RequestCard from '../components/RequestCard';
 
 const CitizenDashboard = () => {
   const [requests, setRequests] = useState([]);
+  const [cityRequests, setCityRequests] = useState([]);
   const [user, setUser] = useState({ prenom: '' });
+  const [loadingCity, setLoadingCity] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,20 +16,30 @@ const CitizenDashboard = () => {
       try {
         const token = localStorage.getItem('token');
 
+        // ✅ Info utilisateur
         const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(userResponse.data);
 
-
+        // ✅ Demandes personnelles
         const requestsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/requests/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRequests(requestsResponse.data);
+
+        // ✅ Fil d’actualité de la ville
+        const cityResponse = await axios.get(`${import.meta.env.VITE_API_URL}/requests/commune`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCityRequests(cityResponse.data);
       } catch (error) {
-        console.error(error);
+        console.error("Erreur de chargement du dashboard :", error);
+      } finally {
+        setLoadingCity(false);
       }
     };
+
     fetchData();
   }, []);
 
@@ -83,6 +95,19 @@ const CitizenDashboard = () => {
               </li>
             ))}
           </ul>
+        </div>
+
+        <div className="mt-10">
+          <h2 className="text-lg font-bold mb-2">📣 Fil d’actualité de votre ville</h2>
+          {loadingCity ? (
+            <p>Chargement...</p>
+          ) : cityRequests.length === 0 ? (
+            <p>Aucune demande récente dans votre ville.</p>
+          ) : (
+            cityRequests.map((req) => (
+              <RequestCard key={req.id} request={req} />
+            ))
+          )}
         </div>
       </div>
     </>

@@ -48,5 +48,6 @@ router.get('/', controller.getAllRequests);
 router.put('/:id/status', controller.updateStatus);
 router.delete('/:id', controller.deleteRequest);
 router.get('/user', authenticateToken, controller.getRequestsByUser);
+router.get('/commune', authenticateToken, controller.getRequestsByCommune);
 
 module.exports = router;

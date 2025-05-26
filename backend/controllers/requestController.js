@@ -62,3 +62,37 @@ exports.getRequestsByUser = async (req, res) => {
     res.status(500).json({ error: "Erreur lors de la récupération des demandes de l'utilisateur." });
   }
 };
+
+
+// ✅ Nouveau contrôleur : demandes par commune
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+exports.getRequestsByCommune = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user || !user.communeId) {
+      return res.status(400).json({ message: 'Commune non spécifiée pour cet utilisateur.' });
+    }
+
+    const requests = await prisma.request.findMany({
+      where: {
+        user: {
+          communeId: user.communeId
+        }
+      },
+      include: {
+        user: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.status(200).json(requests);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des demandes par commune:', error);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
