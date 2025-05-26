@@ -49,5 +49,7 @@ router.put('/:id/status', controller.updateStatus);
 router.delete('/:id', controller.deleteRequest);
 router.get('/user', authenticateToken, controller.getRequestsByUser);
 router.get('/commune', authenticateToken, controller.getRequestsByCommune);
+router.get('/:id', authenticateToken, controller.getRequestById);
+router.put('/:id', authenticateToken, upload.single('file'), controller.updateRequest);
 
 module.exports = router;

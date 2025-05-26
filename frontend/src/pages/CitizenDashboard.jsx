@@ -82,20 +82,6 @@ const CitizenDashboard = () => {
           </button>
         </div>
 
-        <div>
-          <h2 className="text-lg font-bold mb-2">🕒 Dernières demandes</h2>
-          <ul className="space-y-2">
-            {requests.slice(0, 5).map((req) => (
-              <li key={req.id} className="p-3 bg-gray-100 rounded">
-                <div className="flex justify-between">
-                  <span className="font-medium">{req.type}</span>
-                  <span className="text-sm text-gray-600">{new Date(req.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="text-sm text-gray-700">Statut : <strong>{req.status}</strong></div>
-              </li>
-            ))}
-          </ul>
-        </div>
 
         <div className="mt-10">
           <h2 className="text-lg font-bold mb-2">📣 Fil d’actualité de votre ville</h2>

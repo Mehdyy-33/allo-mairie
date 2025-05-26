@@ -8,6 +8,7 @@ import TrackRequest from './pages/TrackRequest';
 import Stats from './pages/Stats';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import ModifierDemande from './components/ModifierDemande';
 import CitizenDashboard from './pages/CitizenDashboard';
 import NouvelleDemande from './pages/NouvelleDemande';
 import MesDemandes from './pages/MesDemandes';
@@ -27,6 +28,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute><CitizenDashboard /></ProtectedRoute>} />
         <Route path="/nouvelle-demande" element={<ProtectedRoute><NouvelleDemande /></ProtectedRoute>} />
         <Route path="/demandes" element={<ProtectedRoute><MesDemandes /></ProtectedRoute>} />
+        <Route path="/modifier-demande/:id" element={<ProtectedRoute><ModifierDemande /></ProtectedRoute>} />
         <Route path="/documents" element={<ProtectedRoute><MesDocuments /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />

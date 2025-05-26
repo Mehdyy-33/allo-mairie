@@ -29,7 +29,14 @@ app.use(express.urlencoded({ extended: true }));
 const path = require('path'); // ⚠️ Important si pas déjà importé
 
 // 👉 Cette ligne sert le dossier "uploads" à l'URL "/api/uploads"
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // 🔥 essentiel pour les images
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
+
 
 // ✅ Redirection vers HTTPS en production
 if (process.env.NODE_ENV === 'production') {

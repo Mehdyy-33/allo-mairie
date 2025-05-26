@@ -1,7 +1,9 @@
+
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CitizenHeader from '../components/CitizenHeader';
+import RequestCard from '../components/RequestCard';
 
 export default function MesDemandes() {
   const [requests, setRequests] = useState([]);
@@ -9,6 +11,7 @@ export default function MesDemandes() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState('desc');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -33,7 +36,7 @@ export default function MesDemandes() {
 
     if (search) {
       result = result.filter((r) =>
-r.category && r.category.toLowerCase().includes(search.toLowerCase())
+        r.category && r.category.toLowerCase().includes(search.toLowerCase())
       );
     }
 
@@ -50,14 +53,18 @@ r.category && r.category.toLowerCase().includes(search.toLowerCase())
     setFiltered(result);
   }, [search, statusFilter, sortOrder, requests]);
 
-  const formatDate = (iso) => new Date(iso).toLocaleDateString('fr-FR');
+  const handleDelete = async (id) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer cette demande ?")) return;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'en_cours': return 'bg-yellow-200 text-yellow-800';
-      case 'terminee': return 'bg-green-200 text-green-800';
-      case 'refusee': return 'bg-red-200 text-red-800';
-      default: return 'bg-gray-200 text-gray-800';
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${import.meta.env.VITE_API_URL}/requests/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+    } catch (error) {
+      console.error("Erreur de suppression :", error);
+      alert("Une erreur est survenue.");
     }
   };
 
@@ -103,29 +110,17 @@ r.category && r.category.toLowerCase().includes(search.toLowerCase())
         {filtered.length === 0 ? (
           <p className="text-gray-600">Aucune demande trouvée.</p>
         ) : (
-          <ul className="space-y-4">
+          <div className="space-y-4">
             {filtered.map((req) => (
-              <li key={req.id} className="border rounded p-4 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-<span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 mr-2">
-  {req.category}
-</span>
-                    <p className="text-sm text-gray-500">Créée le {formatDate(req.createdAt)}</p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(req.status)}`}>
-                    {req.status}
-                  </span>
-                </div>
-                <Link
-                  to={`/suivi?id=${req.id}`}
-                  className="text-blue-600 text-sm mt-2 inline-block hover:underline"
-                >
-                  Voir le détail →
-                </Link>
-              </li>
+              <RequestCard
+                key={req.id}
+                request={req}
+                isOwnRequest={true}
+                onEdit={(id) => navigate(`/modifier-demande/${id}`)}
+                onDelete={handleDelete}
+              />
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </>
