@@ -51,3 +51,27 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ error: "Erreur lors de la mise à jour du profil." });
   }
 };
+
+exports.getCurrentUser = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        email: true,
+        nom: true,
+        prenom: true,
+        commune: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur non trouvé." });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur serveur." });
+  }
+};
