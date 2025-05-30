@@ -1,87 +1,111 @@
+// src/controllers/authController.js
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { z } = require('zod');
+const bcrypt          = require('bcrypt');
+const jwt             = require('jsonwebtoken');
+const { z }           = require('zod');
 
 const prisma = new PrismaClient();
 const SECRET = process.env.JWT_SECRET || 'citoyen-secret';
 
-// ✅ Schéma d'inscription avec validation stricte
+// Schéma d'inscription : nom, prenom et communeId sont maintenant facultatifs
 const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "Mot de passe trop court"),
-  nom: z.string().min(1, "Nom requis"),
-  prenom: z.string().min(1, "Prénom requis"),
-  communeId: z.number().int().positive("Commune invalide")
+  email:     z.string().email(),
+  password:  z.string().min(8, "Mot de passe trop court"),
+  nom:       z.string().min(1, "Nom requis").optional(),
+  prenom:    z.string().min(1, "Prénom requis").optional(),
+  communeId: z.number().int().positive("Commune invalide").optional(),
 });
 
-const register = async (req, res) => {
+exports.register = async (req, res) => {
+  // 1) validation du payload
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: 'Champs invalides.', details: parsed.error.errors });
+    return res.status(400).json({
+      error:   'Champs invalides.',
+      details: parsed.error.errors.map(err => ({
+        path: err.path,
+        message: err.message
+      }))
+    });
   }
-
   const { email, password, nom, prenom, communeId } = parsed.data;
 
   try {
+    // 2) pas de doublon d'email
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email déjà utilisé.' });
+      return res.status(409).json({ error: 'Email déjà utilisé.' });
     }
 
-    const commune = await prisma.commune.findUnique({ where: { id: communeId } });
-    if (!commune || !commune.active) {
-      return res.status(400).json({ error: 'Commune non valide ou inactive.' });
+    // 3) si on veut associer à une commune, on la vérifie
+    if (communeId !== undefined) {
+      const commune = await prisma.commune.findUnique({ where: { id: communeId } });
+      if (!commune || !commune.active) {
+        return res.status(400).json({ error: 'Commune non valide ou inactive.' });
+      }
     }
 
+    // 4) hash du mot de passe
     const hashed = await bcrypt.hash(password, 10);
 
+    // 5) création de l'utilisateur (communeId null pour super-admin)
     const user = await prisma.user.create({
       data: {
         email,
-        password: hashed,
-        nom,
-        prenom,
-        communeId: Number(communeId),
+        password:  hashed,
+        nom:       nom ?? null,
+        prenom:    prenom ?? null,
         isComplete: true,
+        communeId: communeId ?? null,
       },
     });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
-    res.status(201).json({ token });
+    // 6) signature du JWT
+    const token = jwt.sign(
+      { id: user.id, email: user.email, communeId: user.communeId },
+      SECRET,
+      { expiresIn: '1h' }
+    );
+
+    return res.status(201).json({ token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erreur serveur.' });
+    console.error('Register error:', err);
+    return res.status(500).json({ error: 'Erreur serveur.' });
   }
 };
 
-// ✅ Schéma de login avec zod
+// Schéma de login inchangé
 const loginSchema = z.object({
-  email: z.string().email(),
+  email:    z.string().email(),
   password: z.string().min(8)
 });
 
-const login = async (req, res) => {
+exports.login = async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Email ou mot de passe invalide.' });
   }
-
   const { email, password } = parsed.data;
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(401).json({ error: 'Utilisateur non trouvé' });
+    if (!user) {
+      return res.status(401).json({ error: 'Utilisateur non trouvé.' });
+    }
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ error: 'Mot de passe invalide' });
+    if (!valid) {
+      return res.status(401).json({ error: 'Mot de passe invalide.' });
+    }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    const token = jwt.sign(
+      { id: user.id, email: user.email, communeId: user.communeId },
+      SECRET,
+      { expiresIn: '1h' }
+    );
+    return res.json({ token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erreur serveur.' });
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Erreur serveur.' });
   }
 };
-
-module.exports = { register, login };

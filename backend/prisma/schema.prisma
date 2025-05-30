@@ -37,11 +37,21 @@ model User {
   googleId   String?   // ✅ Ajouté ici
 }
 
-
 model Commune {
-  id      Int     @id @default(autoincrement())
-  nom     String  @unique
-  active  Boolean @default(true)
+  id          Int           @id @default(autoincrement())
+  nom         String        @unique
+  active      Boolean       @default(true)
+  users       User[]
+  invitations Invitation[]  // ← ajouter cette ligne
+}
 
-  users   User[]
+model Invitation {
+  id         Int       @id @default(autoincrement())
+  email      String
+  token      String    @unique
+  communeId  Int
+  commune    Commune   @relation(fields: [communeId], references: [id])
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  usedAt     DateTime?
 }

@@ -5,7 +5,7 @@ const session = require('express-session');
 const { PrismaClient } = require('@prisma/client');
 const passport = require('./middlewares/passport');
 const helmet = require('helmet');
-const communeRoutes = require('./routes/communeRoutes');
+const path = require('path');
 
 dotenv.config();
 if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET non défini !");
@@ -14,8 +14,14 @@ const app = express();
 const prisma = new PrismaClient();
 
 // 📦 Import des routes
-const requestRoutes = require('./routes/requestRoutes');
-const authRoutes = require('./routes/authRoutes');
+const requestRoutes     = require('./routes/requestRoutes');
+const authRoutes        = require('./routes/authRoutes');
+const communeRoutes     = require('./routes/communeRoutes');
+const userRoutes        = require('./routes/userRoutes');
+
+// 🆕 Import routes Admin
+const adminCitiesRouter      = require('./routes/admin/cities');
+const adminInvitationsRouter = require('./routes/admin/invitations');
 
 // 🔐 Middlewares de sécurité
 app.use(helmet());
@@ -26,17 +32,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const path = require('path'); // ⚠️ Important si pas déjà importé
-
-// 👉 Cette ligne sert le dossier "uploads" à l'URL "/api/uploads"
-app.use('/api/uploads', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); // 🔥 essentiel pour les images
-  next();
-}, express.static(path.join(__dirname, 'uploads')));
-
+// 👉 Sert le dossier "uploads" à l'URL "/api/uploads"
+app.use(
+  '/api/uploads',
+  (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads'))
+);
 
 // ✅ Redirection vers HTTPS en production
 if (process.env.NODE_ENV === 'production') {
@@ -70,17 +77,27 @@ app.get('/api/ping', (req, res) => {
   res.send({ message: 'API OK ✅' });
 });
 
-// 🚏 Routes
-app.use('/api/requests', requestRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api', communeRoutes); // ✅ Ajout de la route des communes
+// 🚏 Routes publiques / généralistes
+app.use('/api/requests',  requestRoutes);
+app.use('/api/auth',      authRoutes);
+app.use('/api',           communeRoutes);
+app.use('/api/user',      userRoutes);
+
+// 🏙 Administration des villes (JWT protégé)
+app.use(
+  '/api/admin/cities',
+  passport.authenticate('jwt', { session: false }),
+  adminCitiesRouter
+);
+
+// 📨 Invitations d’admin (création protégée dans le router, les GET/POST token sont publics)
+app.use(
+  '/api/admin/invitations',
+  adminInvitationsRouter
+);
 
 // 🚀 Lancement serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`✅ Serveur backend lancé sur http://localhost:${PORT}`);
-
+  console.log(`✅ Serveur backend lancé sur http://localhost:${PORT}`);
 });
-
-const userRoutes = require('./routes/userRoutes');
-app.use('/api/user', userRoutes);

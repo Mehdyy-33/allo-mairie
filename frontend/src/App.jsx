@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import Header from './pages/Header';
 import HeaderAuth from './pages/HeaderAuth';
 import Home from './pages/Home';
@@ -6,33 +7,94 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import TrackRequest from './pages/TrackRequest';
 import Stats from './pages/Stats';
-import AdminDashboard from './pages/AdminDashboard';
+// import AdminDashboard from './pages/AdminDashboard'; // supprimé
 import ProtectedRoute from './components/ProtectedRoute';
 import ModifierDemande from './components/ModifierDemande';
 import CitizenDashboard from './pages/CitizenDashboard';
 import NouvelleDemande from './pages/NouvelleDemande';
 import MesDemandes from './pages/MesDemandes';
 import CompleterProfil from './pages/CompleterProfil';
-
-// 🆕 Pages ajoutées
 import Profil from './pages/Profil';
 import FAQ from './pages/FAQ';
 import MesDocuments from './pages/MesDocuents';
 import Notifications from './pages/Notification';
+
+// 🆕 Import des nouveaux composants admin
+import AdminLayout from './pages/admin/AdminLayout';
+import CitiesList from './pages/admin/CitiesList';
+import CityAdminPage from './pages/admin/CityAdminPage';
+import InviteAdmin from './pages/admin/InviteAdmin';
+import ActivateAccount from './pages/admin/ActivateAccount';
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Routes citoyennes protégées */}
-        <Route path="/dashboard" element={<ProtectedRoute><CitizenDashboard /></ProtectedRoute>} />
-        <Route path="/nouvelle-demande" element={<ProtectedRoute><NouvelleDemande /></ProtectedRoute>} />
-        <Route path="/demandes" element={<ProtectedRoute><MesDemandes /></ProtectedRoute>} />
-        <Route path="/modifier-demande/:id" element={<ProtectedRoute><ModifierDemande /></ProtectedRoute>} />
-        <Route path="/documents" element={<ProtectedRoute><MesDocuments /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-        <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
-        <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <CitizenDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/nouvelle-demande"
+          element={
+            <ProtectedRoute>
+              <NouvelleDemande />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/demandes"
+          element={
+            <ProtectedRoute>
+              <MesDemandes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/modifier-demande/:id"
+          element={
+            <ProtectedRoute>
+              <ModifierDemande />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute>
+              <MesDocuments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profil"
+          element={
+            <ProtectedRoute>
+              <Profil />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faq"
+          element={
+            <ProtectedRoute>
+              <FAQ />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/completer-profil" element={<CompleterProfil />} />
 
@@ -85,7 +147,30 @@ function App() {
         {/* Autres pages accessibles */}
         <Route path="/stats" element={<Stats />} />
         <Route path="/suivi" element={<TrackRequest />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+
+        {/* Nouvel espace Admin : layout + sous-routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          {/* /admin → liste des villes */}
+          <Route index element={<CitiesList />} />
+          {/* /admin/:cityId → page admin d’une ville */}
+          <Route path=":cityId" element={<CityAdminPage />} />
+        </Route>
+
+        {/* Route protégée pour inviter un admin de mairie */}
+        <Route
+          path="/admin/invite"
+          element={
+            <ProtectedRoute>
+              <InviteAdmin />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Route publique d’activation par token */}
+        <Route path="/activate/:token" element={<ActivateAccount />} />
+
+        {/* Fallback vers /admin */}
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Router>
   );

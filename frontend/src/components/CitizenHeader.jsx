@@ -9,24 +9,35 @@ export default function CitizenHeader() {
   const [userInitial, setUserInitial] = useState('U');
   const menuRef = useRef(null);
 
-  // 🔁 Récupération automatique du prénom depuis /me
+  // 🔁 Récupération automatique du profil (/me)
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/users/me', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/auth/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
           }
-        });
+        );
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data.prenom) {
-            const initial = data.prenom.charAt(0).toUpperCase();
-            localStorage.setItem('prenom', data.prenom);
-            setUserInitial(initial);
-          }
+        if (!res.ok) {
+          console.error("API profile error", res.status);
+          return;
         }
+
+        const data = await res.json();
+        console.log("Profil récupéré :", data);
+
+        // Détermine la première lettre à afficher
+        let initial = 'U';
+        if (data.prenom && typeof data.prenom === 'string' && data.prenom.length > 0) {
+          initial = data.prenom.charAt(0).toUpperCase();
+        } else if (data.email && typeof data.email === 'string' && data.email.length > 0) {
+          initial = data.email.charAt(0).toUpperCase();
+        }
+        setUserInitial(initial);
       } catch (err) {
         console.error("Erreur lors de la récupération du profil :", err);
       }
@@ -35,6 +46,7 @@ export default function CitizenHeader() {
     fetchUser();
   }, []);
 
+  // Mise à jour du titre selon la route
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('dashboard')) setCurrentPage('Tableau de bord');
@@ -43,10 +55,11 @@ export default function CitizenHeader() {
     else if (path.includes('documents')) setCurrentPage('Mes documents');
     else if (path.includes('notifications')) setCurrentPage('Notifications');
     else if (path.includes('profil')) setCurrentPage('Mon profil');
-    else if (path.includes('faq')) setCurrentPage('Centre d\'aide');
+    else if (path.includes('faq')) setCurrentPage("Centre d'aide");
     else setCurrentPage('Espace Citoyen');
   }, [location]);
 
+  // Ferme le dropdown si on clique à l'extérieur
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -65,7 +78,6 @@ export default function CitizenHeader() {
   return (
     <header className="bg-white shadow p-4 mb-6">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-4">
-        
         {/* Titre à gauche */}
         <div className="flex-none text-lg font-bold text-blue-600">
           {currentPage}
@@ -74,11 +86,21 @@ export default function CitizenHeader() {
         {/* Liens centrés */}
         <div className="flex-1 flex justify-center">
           <nav className="flex flex-wrap justify-center gap-4 text-sm">
-            <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">🏠 Tableau de bord</Link>
-            <Link to="/nouvelle-demande" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">➕ Nouvelle demande</Link>
-            <Link to="/demandes" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">📄 Mes demandes</Link>
-            <Link to="/documents" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">🧾 Mes documents</Link>
-            <Link to="/notifications" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">🔔 Notifications</Link>
+            <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">
+              🏠 Tableau de bord
+            </Link>
+            <Link to="/nouvelle-demande" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">
+              ➕ Nouvelle demande
+            </Link>
+            <Link to="/demandes" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">
+              📄 Mes demandes
+            </Link>
+            <Link to="/documents" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">
+              🧾 Mes documents
+            </Link>
+            <Link to="/notifications" className="text-gray-700 hover:text-blue-600 font-medium whitespace-nowrap">
+              🔔 Notifications
+            </Link>
           </nav>
         </div>
 
@@ -94,7 +116,12 @@ export default function CitizenHeader() {
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
               <Link to="/profil" className="block px-4 py-2 hover:bg-gray-100">Mon profil</Link>
               <Link to="/faq" className="block px-4 py-2 hover:bg-gray-100">Aide</Link>
-              <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100">Déconnexion</button>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Déconnexion
+              </button>
             </div>
           )}
         </div>

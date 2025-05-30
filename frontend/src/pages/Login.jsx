@@ -1,44 +1,77 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate }         from 'react-router-dom';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const navigate                = useNavigate();
+  const API_URL                 = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
+    // Si déjà connecté, on récupère le profil pour rediriger automatiquement
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/dashboard', { replace: true });
-    }
-
-    const url = new URL(window.location.href);
-    const oauthToken = url.searchParams.get('token');
-    if (oauthToken) {
-      localStorage.setItem('token', oauthToken);
-      navigate('/dashboard', { replace: true });
+      (async () => {
+        try {
+          const res = await fetch(`${API_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const user = await res.json();
+            if (user.communeId == null) {
+              return navigate('/admin/invite', { replace: true });
+            } else if (user.communeId) {
+              return navigate(`/admin/${user.communeId}`, { replace: true });
+            }
+          }
+        } catch {}
+        navigate('/dashboard', { replace: true });
+      })();
     }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-    const data = await res.json();
-    if (res.ok) {
+      if (!res.ok) {
+        return alert(data.error || 'Erreur de connexion');
+      }
+
+      // 1) Stocke le token
       localStorage.setItem('token', data.token);
+
+      // 2) Récupère le profil pour savoir où rediriger
+      const profileRes = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${data.token}` }
+      });
+
+      if (profileRes.ok) {
+        const user = await profileRes.json();
+        if (user.communeId == null) {
+          return navigate('/admin/invite', { replace: true });
+        } else if (user.communeId) {
+          return navigate(`/admin/${user.communeId}`, { replace: true });
+        }
+      }
+
+      // Par défaut, citoyen
       navigate('/dashboard', { replace: true });
-    } else {
-      alert(data.error || 'Erreur de connexion');
+
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Erreur réseau');
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   return (
@@ -59,7 +92,7 @@ export default function Login() {
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           className="w-full border px-4 py-2 rounded"
           required
         />
@@ -67,7 +100,7 @@ export default function Login() {
           type="password"
           placeholder="Mot de passe"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           className="w-full border px-4 py-2 rounded"
           required
         />
@@ -87,7 +120,7 @@ export default function Login() {
       </p>
 
       <button
-        onClick={() => window.location.href = '/'}
+        onClick={() => navigate('/')}
         className="w-full border border-gray-300 hover:border-gray-500 text-gray-700 py-2 rounded mt-4"
       >
         ⬅ Revenir à l’accueil
