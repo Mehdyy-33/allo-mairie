@@ -1,4 +1,5 @@
 // src/controllers/authController.js
+
 const { PrismaClient } = require('@prisma/client');
 const bcrypt          = require('bcrypt');
 const jwt             = require('jsonwebtoken');
@@ -48,21 +49,27 @@ exports.register = async (req, res) => {
     // 4) hash du mot de passe
     const hashed = await bcrypt.hash(password, 10);
 
-    // 5) création de l'utilisateur (communeId null pour super-admin)
+    // 5) création de l'utilisateur (isAdmin false par défaut)
     const user = await prisma.user.create({
       data: {
         email,
-        password:  hashed,
-        nom:       nom ?? null,
-        prenom:    prenom ?? null,
+        password:   hashed,
+        nom:        nom ?? null,
+        prenom:     prenom ?? null,
         isComplete: true,
-        communeId: communeId ?? null,
+        communeId:  communeId ?? null,
+        isAdmin:    false
       },
     });
 
-    // 6) signature du JWT
+    // 6) signature du JWT, en incluant isAdmin
     const token = jwt.sign(
-      { id: user.id, email: user.email, communeId: user.communeId },
+      {
+        id:        user.id,
+        email:     user.email,
+        communeId: user.communeId ?? null,
+        isAdmin:   user.isAdmin
+      },
       SECRET,
       { expiresIn: '1h' }
     );
@@ -74,7 +81,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// Schéma de login inchangé
+// Schéma de login
 const loginSchema = z.object({
   email:    z.string().email(),
   password: z.string().min(8)
@@ -99,7 +106,12 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, communeId: user.communeId },
+      {
+        id:        user.id,
+        email:     user.email,
+        communeId: user.communeId ?? null,
+        isAdmin:   Boolean(user.isAdmin)
+      },
       SECRET,
       { expiresIn: '1h' }
     );
@@ -108,4 +120,10 @@ exports.login = async (req, res) => {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Erreur serveur.' });
   }
+};
+
+// Facultatif : endpoint GET /auth/me pour renvoyer le profil complet
+exports.getProfile = async (req, res) => {
+  const { id, email, prenom, nom, communeId, isAdmin } = req.user;
+  res.json({ id, email, prenom, nom, communeId, isAdmin });
 };

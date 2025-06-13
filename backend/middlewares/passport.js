@@ -14,9 +14,9 @@ if (!SECRET) {
   throw new Error("JWT_SECRET non défini !");
 }
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
+const GOOGLE_CALLBACK_URL  = process.env.GOOGLE_CALLBACK_URL;
 if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_CALLBACK_URL) {
   throw new Error(
     "Variables d'environnement Google OAuth manquantes (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL)"
@@ -40,8 +40,7 @@ passport.deserializeUser(async (id, done) => {
 
 // ——————————————————————————————————————————
 // 2) Stratégie JWT
-//    Permet de protéger les routes avec : 
-//      passport.authenticate('jwt', { session: false })
+//    Pour protéger les routes via `passport.authenticate('jwt', { session: false })`
 // ——————————————————————————————————————————
 passport.use(
   'jwt',
@@ -66,14 +65,14 @@ passport.use(
 
 // ——————————————————————————————————————————
 // 3) Stratégie Google OAuth
-//    Pour login via Google et création/utilisateur
+//    Pour login via Google et création/mise à jour utilisateur
 // ——————————————————————————————————————————
 passport.use(
   new GoogleStrategy(
     {
-      clientID: GOOGLE_CLIENT_ID,
+      clientID:     GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: GOOGLE_CALLBACK_URL,
+      callbackURL:  GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -85,18 +84,20 @@ passport.use(
           user = await prisma.user.create({
             data: {
               email,
-              password: 'google-oauth',  // placeholder, ne sert pas en login OAuth
-              googleId: profile.id,
-              nom: profile.displayName,
-              isComplete: false,
+              password:    'google-oauth',   // placeholder
+              googleId:    profile.id,
+              nom:         profile.displayName,
+              isComplete:  false,
+              isAdmin:     false             // par défaut, pas admin
             },
           });
         } else {
           // Utilisateur existant → mise à jour si nécessaire
           const updates = {};
-          if (!user.googleId)      updates.googleId = profile.id;
-          if (!user.nom)           updates.nom = profile.displayName;
+          if (!user.googleId)         updates.googleId   = profile.id;
+          if (!user.nom)              updates.nom        = profile.displayName;
           if (user.isComplete === false) updates.isComplete = true;
+          // isAdmin reste ce qu'il était
 
           if (Object.keys(updates).length > 0) {
             user = await prisma.user.update({
@@ -106,14 +107,19 @@ passport.use(
           }
         }
 
-        // Génération du JWT pour le front
+        // Génération du JWT pour le front, en incluant le flag isAdmin
         const token = jwt.sign(
-          { id: user.id, email: user.email, communeId: user.communeId ?? null },
+          {
+            id:        user.id,
+            email:     user.email,
+            communeId: user.communeId ?? null,
+            isAdmin:   Boolean(user.isAdmin)
+          },
           SECRET,
           { expiresIn: '1h' }
         );
 
-        // On passe l'utilisateur + token à la suite
+        // On renvoie dans `profile` l'utilisateur + token
         return done(null, { ...user, token });
       } catch (err) {
         return done(err, null);

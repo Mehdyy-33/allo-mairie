@@ -1,5 +1,8 @@
+// src/pages/Login.jsx
+
 import { useState, useEffect } from 'react';
 import { useNavigate }         from 'react-router-dom';
+import axios                   from 'axios';
 
 export default function Login() {
   const [email, setEmail]       = useState('');
@@ -7,66 +10,49 @@ export default function Login() {
   const navigate                = useNavigate();
   const API_URL                 = import.meta.env.VITE_API_URL;
 
+  // Si on a déjà un token, on décode le payload pour rediriger immédiatement
   useEffect(() => {
-    // Si déjà connecté, on récupère le profil pour rediriger automatiquement
     const token = localStorage.getItem('token');
-    if (token) {
-      (async () => {
-        try {
-          const res = await fetch(`${API_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const user = await res.json();
-            if (user.communeId == null) {
-              return navigate('/admin/invite', { replace: true });
-            } else if (user.communeId) {
-              return navigate(`/admin/${user.communeId}`, { replace: true });
-            }
-          }
-        } catch {}
-        navigate('/dashboard', { replace: true });
-      })();
+    if (!token) return;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.communeId) {
+        return navigate(`/admin/${payload.communeId}`, { replace: true });
+      }
+      if (payload.isAdmin) {
+        return navigate('/admin', { replace: true });
+      }
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Décodage du token failed:', err);
+      // si le token est invalide on reste sur la page login
     }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        return alert(data.error || 'Erreur de connexion');
-      }
-
-      // 1) Stocke le token
+      // 1) Authentification
+      const { data } = await axios.post(
+        `${API_URL}/auth/login`,
+        { email, password }
+      );
+      // 2) Stockage du token
       localStorage.setItem('token', data.token);
 
-      // 2) Récupère le profil pour savoir où rediriger
-      const profileRes = await fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${data.token}` }
-      });
-
-      if (profileRes.ok) {
-        const user = await profileRes.json();
-        if (user.communeId == null) {
-          return navigate('/admin/invite', { replace: true });
-        } else if (user.communeId) {
-          return navigate(`/admin/${user.communeId}`, { replace: true });
-        }
+      // 3) Décodage du payload pour redirection
+      const payload = JSON.parse(atob(data.token.split('.')[1]));
+      if (payload.communeId) {
+        navigate(`/admin/${payload.communeId}`, { replace: true });
+      } else if (payload.isAdmin) {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
       }
-
-      // Par défaut, citoyen
-      navigate('/dashboard', { replace: true });
-
     } catch (err) {
       console.error('Login error:', err);
-      alert('Erreur réseau');
+      alert(err.response?.data?.error || 'Erreur de connexion');
     }
   };
 
@@ -75,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="w-full max-w-sm px-4 space-y-6">
+    <div className="w-full max-w-sm px-4 space-y-6 mx-auto mt-16">
       <h2 className="text-2xl font-bold text-center">Connexion</h2>
 
       <button
