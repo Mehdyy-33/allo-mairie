@@ -4,16 +4,22 @@ const { PrismaClient } = require('@prisma/client');
 const crypto           = require('crypto');
 const sgMail           = require('@sendgrid/mail');
 const bcrypt           = require('bcrypt');
+const jwt              = require('jsonwebtoken');
 
 const prisma = new PrismaClient();
 
 // Récupération de l'URL de ton front pour le lien d'activation
-// On essaie FRONT_URL (recommandé) puis FRONTEND_URL (pour compatibilité)
 const FRONT_URL = process.env.FRONT_URL || process.env.FRONTEND_URL;
 if (!FRONT_URL) {
   throw new Error(
     "Variable d'environnement FRONT_URL ou FRONTEND_URL non définie !"
   );
+}
+
+// Clé secrète JWT (utilisée pour générer le token de session)
+const SECRET = process.env.JWT_SECRET;
+if (!SECRET) {
+  throw new Error("Variable d'environnement JWT_SECRET non définie !");
 }
 
 // Configure SendGrid avec ta clé API depuis .env
@@ -96,34 +102,57 @@ exports.activateAdmin = async (req, res) => {
   const { token } = req.params;
   const { prenom, nom, password } = req.body;
 
+  // Vérifie l’invitation
   const inv = await prisma.invitation.findUnique({ where: { token } });
   if (!inv || inv.usedAt || inv.expiresAt < new Date()) {
     return res.status(400).json({ error: 'Invitation invalide ou expirée' });
   }
 
   try {
-    // Hash du mot de passe
+    // 1) Hash du mot de passe
     const hash = await bcrypt.hash(password, 10);
 
-    // Création du user admin
-    const user = await prisma.user.create({
-      data: {
-        email:      inv.email,
-        password:   hash,
+    // 2) Upsert de l'utilisateur admin avec isAdmin = true
+    const user = await prisma.user.upsert({
+      where: { email: inv.email },
+      update: {
         prenom,
         nom,
+        password:   hash,
         communeId:  inv.communeId,
-        isComplete: true
+        isComplete: true,
+        isAdmin:    true
+      },
+      create: {
+        email:      inv.email,
+        prenom,
+        nom,
+        password:   hash,
+        communeId:  inv.communeId,
+        isComplete: true,
+        isAdmin:    true
       }
     });
 
-    // Marque l’invitation comme utilisée
+    // 3) Marque l’invitation comme utilisée
     await prisma.invitation.update({
       where: { token },
       data: { usedAt: new Date() }
     });
 
-    res.json({ message: 'Compte activé', userId: user.id });
+    // 4) Génération du JWT pour le front
+    const jwtToken = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        communeId: user.communeId
+      },
+      SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // 5) Envoi du token au front
+    return res.json({ token: jwtToken });
   } catch (err) {
     console.error('activateAdmin error:', err);
     res.status(500).json({ error: 'Impossible d’activer le compte' });
