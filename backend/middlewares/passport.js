@@ -7,8 +7,21 @@ const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 
 const prisma = new PrismaClient();
+
+// --- Vérification des secrets/env variables ---
 const SECRET = process.env.JWT_SECRET;
-if (!SECRET) throw new Error("JWT_SECRET non défini !");
+if (!SECRET) {
+  throw new Error("JWT_SECRET non défini !");
+}
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_CALLBACK_URL) {
+  throw new Error(
+    "Variables d'environnement Google OAuth manquantes (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL)"
+  );
+}
 
 // ——————————————————————————————————————————
 // 1) Sérialisation / désérialisation (pour sessions, si utilisées)
@@ -35,7 +48,7 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: SECRET
+      secretOrKey: SECRET,
     },
     async (payload, done) => {
       try {
@@ -58,33 +71,32 @@ passport.use(
 passport.use(
   new GoogleStrategy(
     {
-      clientID:     process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:  'http://localhost:3000/api/auth/google/callback',
+      clientID: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      callbackURL: GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
-
         let user = await prisma.user.findUnique({ where: { email } });
 
         if (!user) {
-          // premier login Google → création
+          // Premier login Google → création d'un nouvel utilisateur
           user = await prisma.user.create({
             data: {
               email,
-              password: 'google-oauth',  // placeholder
+              password: 'google-oauth',  // placeholder, ne sert pas en login OAuth
               googleId: profile.id,
-              nom:      profile.displayName,
+              nom: profile.displayName,
               isComplete: false,
             },
           });
         } else {
-          // existant → mise à jour si besoin
+          // Utilisateur existant → mise à jour si nécessaire
           const updates = {};
-          if (!user.googleId) updates.googleId = profile.id;
-          if (!user.nom)      updates.nom      = profile.displayName;
-          if (!user.isComplete) updates.isComplete = true;
+          if (!user.googleId)      updates.googleId = profile.id;
+          if (!user.nom)           updates.nom = profile.displayName;
+          if (user.isComplete === false) updates.isComplete = true;
 
           if (Object.keys(updates).length > 0) {
             user = await prisma.user.update({
@@ -94,14 +106,14 @@ passport.use(
           }
         }
 
-        // On génère un JWT pour le front
+        // Génération du JWT pour le front
         const token = jwt.sign(
           { id: user.id, email: user.email, communeId: user.communeId ?? null },
           SECRET,
           { expiresIn: '1h' }
         );
 
-        // on renvoie user + token dans l'objet profile
+        // On passe l'utilisateur + token à la suite
         return done(null, { ...user, token });
       } catch (err) {
         return done(err, null);

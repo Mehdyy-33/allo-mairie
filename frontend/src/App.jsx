@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import Header from './pages/Header';
 import HeaderAuth from './pages/HeaderAuth';
@@ -7,7 +9,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import TrackRequest from './pages/TrackRequest';
 import Stats from './pages/Stats';
-// import AdminDashboard from './pages/AdminDashboard'; // supprimé
 import ProtectedRoute from './components/ProtectedRoute';
 import ModifierDemande from './components/ModifierDemande';
 import CitizenDashboard from './pages/CitizenDashboard';
@@ -26,9 +27,29 @@ import CityAdminPage from './pages/admin/CityAdminPage';
 import InviteAdmin from './pages/admin/InviteAdmin';
 import ActivateAccount from './pages/admin/ActivateAccount';
 
+// Petit composant pour extraire le token de l'URL et le stocker
+function TokenHandler() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlToken = params.get('token');
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      // Nettoyage de l'URL sans rechargement
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.search, location.pathname, navigate]);
+
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <TokenHandler />
+
       <Routes>
         {/* Routes citoyennes protégées */}
         <Route

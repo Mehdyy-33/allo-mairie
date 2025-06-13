@@ -14,6 +14,16 @@ export default function ProtectedRoute({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // 1) Si on a un token dans l'URL, on le stocke et on nettoie l'URL
+    const params = new URLSearchParams(location.search);
+    const urlToken = params.get('token');
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      // on enlève le token de l'URL sans recharger la page
+      navigate(location.pathname, { replace: true });
+      return;
+    }
+
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -42,8 +52,11 @@ export default function ProtectedRoute({ children }) {
           }
         }
 
-        // Page /admin/:cityId  → si admin de commune, ne laisse passer que sa ville
-        if (location.pathname.startsWith('/admin/') && location.pathname !== '/admin/invite') {
+        // Page /admin/:cityId → si admin de commune, ne laisse passer que sa ville
+        if (
+          location.pathname.startsWith('/admin/') &&
+          location.pathname !== '/admin/invite'
+        ) {
           const parts = location.pathname.split('/');
           const cityId = parts[2]; // e.g. "5"
           // si c'est un admin de commune, il ne peut voir que sa propre ville
@@ -64,7 +77,7 @@ export default function ProtectedRoute({ children }) {
     };
 
     checkAuth();
-  }, [location.pathname, navigate]);
+  }, [location.search, location.pathname, navigate]);
 
   if (loading) {
     return <div className="p-4 text-center">Chargement...</div>;
